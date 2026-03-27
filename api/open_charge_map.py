@@ -13,7 +13,7 @@ import time
 import requests
 
 OCM_BASE = "https://api.openchargemap.io/v3/poi/"
-OCM_API_KEY = "92c61eeb-dd49-410d-b5c6-9f4af71006cc"
+OCM_API_KEY = ""
 RATE_LIMIT_INTERVAL = 1.1  # seconds between requests
 
 # Fallback data path
