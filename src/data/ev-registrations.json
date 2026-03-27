@@ -1,0 +1,24 @@
+{
+  "states": [
+    { "state": "Uttar Pradesh", "code": "UP", "evRegistrations": 377000, "evPenetration": 8.2, "e2w": 89000, "e3w": 266000, "e4w": 12000, "growthRate": 22, "population": 231000000, "topCities": ["Lucknow","Noida","Agra","Kanpur","Varanasi","Ghaziabad","Meerut","Prayagraj"] },
+    { "state": "Maharashtra", "code": "MH", "evRegistrations": 246000, "evPenetration": 9.1, "e2w": 212000, "e3w": 17000, "e4w": 17000, "growthRate": 18, "population": 124000000, "topCities": ["Mumbai","Pune","Nagpur","Nashik","Thane","Aurangabad"] },
+    { "state": "Karnataka", "code": "KA", "evRegistrations": 179000, "evPenetration": 10.3, "e2w": 148000, "e3w": 16000, "e4w": 15000, "growthRate": 24, "population": 68000000, "topCities": ["Bengaluru","Mysuru","Hubli","Mangaluru"] },
+    { "state": "Tamil Nadu", "code": "TN", "evRegistrations": 131000, "evPenetration": 7.8, "e2w": 110000, "e3w": 11000, "e4w": 10000, "growthRate": 20, "population": 77000000, "topCities": ["Chennai","Coimbatore","Madurai","Tiruchirappalli","Salem"] },
+    { "state": "Bihar", "code": "BR", "evRegistrations": 113000, "evPenetration": 5.1, "e2w": 22000, "e3w": 88000, "e4w": 3000, "growthRate": 35, "population": 125000000, "topCities": ["Patna","Gaya","Muzaffarpur","Bhagalpur"] },
+    { "state": "Rajasthan", "code": "RJ", "evRegistrations": 109000, "evPenetration": 6.9, "e2w": 78000, "e3w": 25000, "e4w": 6000, "growthRate": 28, "population": 81000000, "topCities": ["Jaipur","Jodhpur","Udaipur","Kota","Ajmer"] },
+    { "state": "Madhya Pradesh", "code": "MP", "evRegistrations": 100000, "evPenetration": 5.5, "e2w": 62000, "e3w": 32000, "e4w": 6000, "growthRate": 30, "population": 85000000, "topCities": ["Bhopal","Indore","Jabalpur","Gwalior"] },
+    { "state": "Gujarat", "code": "GJ", "evRegistrations": 98000, "evPenetration": 7.2, "e2w": 72000, "e3w": 16000, "e4w": 10000, "growthRate": 19, "population": 71000000, "topCities": ["Ahmedabad","Surat","Vadodara","Rajkot","Gandhinagar"] },
+    { "state": "Delhi", "code": "DL", "evRegistrations": 95000, "evPenetration": 12.5, "e2w": 62000, "e3w": 18000, "e4w": 15000, "growthRate": 16, "population": 20000000, "topCities": ["New Delhi","Dwarka","Rohini","Saket"] },
+    { "state": "Telangana", "code": "TS", "evRegistrations": 82000, "evPenetration": 8.8, "e2w": 66000, "e3w": 8000, "e4w": 8000, "growthRate": 26, "population": 39000000, "topCities": ["Hyderabad","Warangal","Nizamabad","Karimnagar"] },
+    { "state": "Kerala", "code": "KL", "evRegistrations": 68000, "evPenetration": 9.5, "e2w": 48000, "e3w": 5000, "e4w": 15000, "growthRate": 21, "population": 35000000, "topCities": ["Kochi","Thiruvananthapuram","Kozhikode","Thrissur"] },
+    { "state": "West Bengal", "code": "WB", "evRegistrations": 55000, "evPenetration": 4.2, "e2w": 28000, "e3w": 24000, "e4w": 3000, "growthRate": 32, "population": 99000000, "topCities": ["Kolkata","Howrah","Durgapur","Siliguri"] },
+    { "state": "Andhra Pradesh", "code": "AP", "evRegistrations": 48000, "evPenetration": 6.1, "e2w": 34000, "e3w": 9000, "e4w": 5000, "growthRate": 25, "population": 53000000, "topCities": ["Visakhapatnam","Vijayawada","Tirupati","Guntur"] },
+    { "state": "Haryana", "code": "HR", "evRegistrations": 45000, "evPenetration": 7.6, "e2w": 30000, "e3w": 8000, "e4w": 7000, "growthRate": 23, "population": 29000000, "topCities": ["Gurugram","Faridabad","Panipat","Karnal"] },
+    { "state": "Punjab", "code": "PB", "evRegistrations": 38000, "evPenetration": 5.8, "e2w": 26000, "e3w": 7000, "e4w": 5000, "growthRate": 20, "population": 31000000, "topCities": ["Chandigarh","Ludhiana","Amritsar","Jalandhar"] },
+    { "state": "Odisha", "code": "OD", "evRegistrations": 28000, "evPenetration": 3.8, "e2w": 15000, "e3w": 11000, "e4w": 2000, "growthRate": 38, "population": 46000000, "topCities": ["Bhubaneswar","Cuttack","Rourkela"] },
+    { "state": "Assam", "code": "AS", "evRegistrations": 18000, "evPenetration": 2.9, "e2w": 8000, "e3w": 9000, "e4w": 1000, "growthRate": 42, "population": 35000000, "topCities": ["Guwahati","Dibrugarh","Silchar"] },
+    { "state": "Jharkhand", "code": "JH", "evRegistrations": 22000, "evPenetration": 3.5, "e2w": 10000, "e3w": 11000, "e4w": 1000, "growthRate": 36, "population": 38000000, "topCities": ["Ranchi","Jamshedpur","Dhanbad","Bokaro"] },
+    { "state": "Chhattisgarh", "code": "CG", "evRegistrations": 15000, "evPenetration": 3.2, "e2w": 8000, "e3w": 6000, "e4w": 1000, "growthRate": 34, "population": 29000000, "topCities": ["Raipur","Bilaspur","Durg"] },
+    { "state": "Goa", "code": "GA", "evRegistrations": 12000, "evPenetration": 12.0, "e2w": 9000, "e3w": 1000, "e4w": 2000, "growthRate": 18, "population": 1600000, "topCities": ["Panaji","Margao","Vasco da Gama"] }
+  ]
+}

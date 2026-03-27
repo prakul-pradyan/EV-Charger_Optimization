@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EV Charging Infrastructure Site Selection & Utilization Forecast — Identify top 50 optimal locations across India for fast-charger deployment with real-time analysis.">
+    <title>EV Charger Optimisation — Site Selection Dashboard</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <header id="app-header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-text">
+                    <h1>EV Charger Optimisation</h1>
+                    <p class="tagline">Site Selection & Utilization Forecast — India</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div id="cache-indicator" class="cache-badge" title="Cache Status">
+                    <span class="dot"></span> Cache Ready
+                </div>
+                <button id="btn-run-analysis" class="btn-primary">
+                    <span class="btn-icon">🔍</span> Run Analysis
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── LOADING OVERLAY ────────────────────────────────── -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2>Analysing Locations</h2>
+            <p id="loading-status">Fetching charger data from Open Charge Map...</p>
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── KPI CARDS ──────────────────────────────────────── -->
+    <section id="kpi-section" class="kpi-section">
+        <div class="kpi-card" id="kpi-sites">
+            <div class="kpi-icon">📍</div>
+            <div class="kpi-body">
+                <span class="kpi-value" id="kpi-sites-value">—</span>
+                <span class="kpi-label">Top Sites Identified</span>
+            </div>
+        </div>
+        <div class="kpi-card" id="kpi-utilization">
+            <div class="kpi-icon">📊</div>
+            <div class="kpi-body">
+                <span class="kpi-value" id="kpi-util-value">—</span>
+                <span class="kpi-label">Avg Projected Utilization</span>
+            </div>
+        </div>
+        <div class="kpi-card" id="kpi-breakeven">
+            <div class="kpi-icon">⏱️</div>
+            <div class="kpi-body">
+                <span class="kpi-value" id="kpi-be-value">—</span>
+                <span class="kpi-label">Avg Break-Even (months)</span>
+            </div>
+        </div>
+        <div class="kpi-card" id="kpi-investment">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-body">
+                <span class="kpi-value" id="kpi-inv-value">—</span>
+                <span class="kpi-label">Total Investment (₹ Cr)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── MAIN CONTENT ───────────────────────────────────── -->
+    <main id="main-content">
+        <!-- Filter Panel -->
+        <aside id="filter-panel" class="filter-panel">
+            <h3>Filters</h3>
+            <div class="filter-group">
+                <label for="filter-state">State</label>
+                <select id="filter-state" multiple>
+                    <option value="">All States</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-tier">City Tier</label>
+                <div class="tier-toggles">
+                    <button class="tier-btn active" data-tier="1">Tier 1</button>
+                    <button class="tier-btn active" data-tier="2">Tier 2</button>
+                    <button class="tier-btn active" data-tier="3">Tier 3</button>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="filter-score">Min Score: <span id="score-display">0</span></label>
+                <input type="range" id="filter-score" min="0" max="100" value="0" step="5">
+            </div>
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="filter-highway" checked> Highway Access Only
+                </label>
+            </div>
+            <button id="btn-reset-filters" class="btn-secondary">Reset Filters</button>
+        </aside>
+
+        <!-- Map + Table Split -->
+        <div class="content-split">
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="map-legend" class="map-legend">
+                    <span class="legend-item"><span class="legend-dot score-high"></span> Score ≥ 75</span>
+                    <span class="legend-item"><span class="legend-dot score-mid"></span> Score 50–74</span>
+                    <span class="legend-item"><span class="legend-dot score-low"></span> Score &lt; 50</span>
+                    <span class="legend-item"><span class="legend-dot existing"></span> Existing Charger</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Ranked Sites</h3>
+                    <button id="btn-export-csv" class="btn-secondary btn-small">📥 Export CSV</button>
+                </div>
+                <div class="table-scroll" id="table-scroll">
+                    <table id="sites-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="rank">#</th>
+                                <th data-sort="city">City</th>
+                                <th data-sort="compositeScore">Score</th>
+                                <th data-sort="chargerToVehicleRatio">C:V Ratio</th>
+                                <th data-sort="accessibilityLabel">Access</th>
+                                <th data-sort="breakEvenMonths">Break-even</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sites-tbody">
+                            <tr><td colspan="6" class="empty-state">Click "Run Analysis" to begin</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── CHARTS SECTION ─────────────────────────────────── -->
+    <section id="charts-section" class="charts-section">
+        <div class="chart-card">
+            <h3>Composite Score Distribution</h3>
+            <canvas id="chart-scores"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>6-Month Utilization Forecast (Top 5)</h3>
+            <canvas id="chart-utilization"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>State-wise Opportunity Index</h3>
+            <canvas id="chart-states"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>Investment vs Break-Even</h3>
+            <canvas id="chart-breakeven"></canvas>
+        </div>
+    </section>
+
+    <!-- ── SITE DETAIL MODAL ──────────────────────────────── -->
+    <div id="site-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">✕</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Data sources: Open Charge Map API · OpenStreetMap · MoRTH (FY 2024-25) · PM E-DRIVE Scheme</p>
+    </footer>
+
+    <script src="app.js?v=2"></script>
+</body>
+</html>

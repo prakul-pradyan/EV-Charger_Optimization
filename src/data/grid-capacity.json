@@ -1,0 +1,40 @@
+{
+  "regions": [
+    { "state": "Maharashtra", "avgTariffPerKwh": 5.5, "gridReliability": 8, "substationDensity": 7.5, "renewableMix": 22 },
+    { "state": "Delhi", "avgTariffPerKwh": 4.5, "gridReliability": 9, "substationDensity": 9, "renewableMix": 15 },
+    { "state": "Karnataka", "avgTariffPerKwh": 5.8, "gridReliability": 8, "substationDensity": 7, "renewableMix": 45 },
+    { "state": "Tamil Nadu", "avgTariffPerKwh": 5.2, "gridReliability": 8, "substationDensity": 7.5, "renewableMix": 38 },
+    { "state": "Gujarat", "avgTariffPerKwh": 5.0, "gridReliability": 8.5, "substationDensity": 7.5, "renewableMix": 35 },
+    { "state": "Uttar Pradesh", "avgTariffPerKwh": 6.2, "gridReliability": 6, "substationDensity": 5, "renewableMix": 12 },
+    { "state": "Rajasthan", "avgTariffPerKwh": 6.5, "gridReliability": 7, "substationDensity": 5.5, "renewableMix": 52 },
+    { "state": "Telangana", "avgTariffPerKwh": 5.5, "gridReliability": 8, "substationDensity": 7, "renewableMix": 25 },
+    { "state": "Kerala", "avgTariffPerKwh": 5.0, "gridReliability": 8.5, "substationDensity": 7.5, "renewableMix": 18 },
+    { "state": "West Bengal", "avgTariffPerKwh": 6.0, "gridReliability": 7, "substationDensity": 6, "renewableMix": 10 },
+    { "state": "Madhya Pradesh", "avgTariffPerKwh": 6.3, "gridReliability": 6.5, "substationDensity": 5, "renewableMix": 20 },
+    { "state": "Bihar", "avgTariffPerKwh": 6.8, "gridReliability": 5, "substationDensity": 4, "renewableMix": 8 },
+    { "state": "Andhra Pradesh", "avgTariffPerKwh": 5.8, "gridReliability": 7.5, "substationDensity": 6.5, "renewableMix": 30 },
+    { "state": "Haryana", "avgTariffPerKwh": 5.5, "gridReliability": 8, "substationDensity": 7, "renewableMix": 18 },
+    { "state": "Punjab", "avgTariffPerKwh": 5.3, "gridReliability": 8, "substationDensity": 7, "renewableMix": 15 },
+    { "state": "Odisha", "avgTariffPerKwh": 5.5, "gridReliability": 6.5, "substationDensity": 5, "renewableMix": 12 },
+    { "state": "Jharkhand", "avgTariffPerKwh": 6.5, "gridReliability": 5.5, "substationDensity": 4.5, "renewableMix": 8 },
+    { "state": "Assam", "avgTariffPerKwh": 6.2, "gridReliability": 5, "substationDensity": 3.5, "renewableMix": 6 },
+    { "state": "Chhattisgarh", "avgTariffPerKwh": 5.8, "gridReliability": 6, "substationDensity": 4.5, "renewableMix": 10 },
+    { "state": "Goa", "avgTariffPerKwh": 4.8, "gridReliability": 8, "substationDensity": 7, "renewableMix": 5 },
+    { "state": "Uttarakhand", "avgTariffPerKwh": 5.0, "gridReliability": 7, "substationDensity": 5.5, "renewableMix": 40 }
+  ],
+  "constants": {
+    "chargerPowerKw": 50,
+    "installationCostLakh": 30,
+    "avgSessionKwh": 25,
+    "avgChargingTariffPerKwh": 20,
+    "maintenanceCostMonthly": 15000,
+    "landLeaseMonthly": 25000,
+    "subsidyPercentInfra": 80,
+    "subsidyPercentEquipment": 70,
+    "sessionDurationMinutes": 45,
+    "maxSessionsPerDay": 32,
+    "avgDailySessionsAtFullUtil": 26,
+    "electricityCostMultiplier": 1.0,
+    "annualGrowthRate": 0.18
+  }
+}
