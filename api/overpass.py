@@ -1,115 +1,74 @@
 """
-Overpass API Client (OpenStreetMap)
-====================================
-Queries for Points of Interest near candidate locations:
-  - Fuel stations (potential co-location)
-  - Shopping malls / parking lots (high footfall)
-  - Highway proximity (trunk roads, motorways)
+Local POI Dataset Client (Replacing Live Overpass API)
+======================================================
+Queries for Points of Interest (POIs) using a pre-calculated dataset
+to completely avoid '429 Too Many Requests' rate limits from public servers.
 """
 
-import time
-import requests
-
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
-RATE_LIMIT_INTERVAL = 2.0  # Overpass is stricter on rate-limiting
-
+import os
+import json
+import math
 
 class OverpassClient:
     def __init__(self, cache):
         self.cache = cache
-        self._last_request_time = 0
+        self.dataset = self._load_dataset()
 
-    def _rate_limit(self):
-        now = time.time()
-        elapsed = now - self._last_request_time
-        if elapsed < RATE_LIMIT_INTERVAL:
-            time.sleep(RATE_LIMIT_INTERVAL - elapsed)
-        self._last_request_time = time.time()
+    def _load_dataset(self):
+        """Loads the pre-calculated POI JSON dataset into memory."""
+        try:
+            base_dir = os.path.dirname(os.path.dirname(__file__))
+            dataset_path = os.path.join(base_dir, 'src', 'data', 'poi-dataset.json')
+            with open(dataset_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[Dataset] Failed to load POI dataset: {e}")
+            return []
+
+    def _haversine(self, lat1, lon1, lat2, lon2):
+        """Calculate distance in km."""
+        R = 6371
+        dlat = math.radians(lat2 - lat1)
+        dlon = math.radians(lon2 - lon1)
+        a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
+             math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
+             math.sin(dlon / 2) * math.sin(dlon / 2))
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
 
     def get_cached_pois(self, lat, lng, radius_m=25000):
-        """Check if POIs for this location are already cached. Returns data or None."""
-        cache_params = {"lat": round(lat, 2), "lng": round(lng, 2), "r": radius_m}
-        cached, tier = self.cache.get("overpass_pois", cache_params, ttl=604800)
-        if cached is not None:
-            return {"data": cached, "source": tier}
+        """Bypass caching entirely because reading from memory is instant."""
         return None
 
     def get_pois(self, lat, lng, radius_m=25000):
         """
-        Get POIs near a location.
-        Returns counts and locations of fuel stations, malls, parking, highways.
+        Get POIs near a location from the static dataset.
+        Returns the closest matching city's pre-calculated metadata.
         """
-        cache_params = {"lat": round(lat, 2), "lng": round(lng, 2), "r": radius_m}
-        cached, tier = self.cache.get("overpass_pois", cache_params, ttl=604800)  # 7 days
-        if cached is not None:
-            return {"data": cached, "source": tier}
+        if not self.dataset:
+            return {"data": self._default_pois(), "source": "DEFAULT"}
 
-        query = f"""
-        [out:json][timeout:25];
-        (
-          node["amenity"="fuel"](around:{radius_m},{lat},{lng});
-          node["shop"="mall"](around:{radius_m},{lat},{lng});
-          way["shop"="mall"](around:{radius_m},{lat},{lng});
-          node["amenity"="parking"](around:{radius_m},{lat},{lng});
-          way["amenity"="parking"](around:{radius_m},{lat},{lng});
-          way["highway"~"trunk|motorway"](around:{radius_m},{lat},{lng});
-        );
-        out center count;
-        """
-
-        self._rate_limit()
-        try:
-            resp = requests.post(
-                OVERPASS_URL,
-                data={"data": query},
-                timeout=30,
-                headers={"User-Agent": "EVChargerOptimisation/1.0"},
-            )
-            resp.raise_for_status()
-            data = resp.json()
-        except requests.RequestException as e:
-            print(f"[Overpass] Request failed: {e}")
-            # Return defaults on failure
-            result = self._default_pois()
-            return {"data": result, "source": "DEFAULT"}
-
-        result = self._parse_pois(data, lat, lng)
-        self.cache.set("overpass_pois", cache_params, result, ttl=604800)
-        return {"data": result, "source": "API"}
-
-    def _parse_pois(self, data, center_lat, center_lng):
-        """Parse Overpass response into structured POI data."""
-        fuel_stations = 0
-        malls = 0
-        parking_lots = 0
-        highway_segments = 0
-
-        elements = data.get("elements", [])
-        for el in elements:
-            tags = el.get("tags", {})
-            if tags.get("amenity") == "fuel":
-                fuel_stations += 1
-            elif tags.get("shop") == "mall":
-                malls += 1
-            elif tags.get("amenity") == "parking":
-                parking_lots += 1
-            elif tags.get("highway") in ("trunk", "motorway"):
-                highway_segments += 1
-
-        return {
-            "fuelStations": fuel_stations,
-            "malls": malls,
-            "parkingLots": parking_lots,
-            "highwaySegments": highway_segments,
-            "hasHighwayAccess": highway_segments > 0,
-            "totalPOIs": fuel_stations + malls + parking_lots,
-            "coLocationScore": min(10, fuel_stations * 2 + malls * 3 + parking_lots),
-        }
+        # Find the closest city in our dataset
+        best_match = None
+        min_dist = float('inf')
+        
+        for data in self.dataset:
+            dist = self._haversine(lat, lng, data["lat"], data["lng"])
+            if dist < min_dist:
+                min_dist = dist
+                best_match = data
+                
+        if best_match and min_dist < 50:  # Within 50km
+            return {"data": best_match, "source": "LOCAL_DATASET"}
+            
+        print(f"[Dataset] No close match found for {lat}, {lng}. Using default.")
+        return {"data": self._default_pois(), "source": "DEFAULT"}
 
     @staticmethod
     def _default_pois():
-        """Default POI data when API fails."""
+        """Default POI data when everything fails."""
         return {
+            "osmChargers": 0,
             "fuelStations": 3,
             "malls": 1,
             "parkingLots": 2,

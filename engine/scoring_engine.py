@@ -162,35 +162,38 @@ class ScoringEngine:
         city_ev_share = (pop / max(state_pop, 1)) * ev_regs
         demand = (city_ev_share * (1 + growth)) + (pop * penetration * 0.001)
 
-        # ── Competition Score ──
-        # Count existing chargers within the tier-appropriate radius
-        nearby = _get_nearby_chargers(lat, lng, charger_grid, radius_km=search_radius)
-        charger_count = sum(c.get("numPoints", 1) for c in nearby)
-
-        # Competition scoring: scaling thresholds by market size
-        # Since we are using raw OCM data (which is quite low for India natively), 
-        # we adjust the thresholds back to normal scale.
-        if charger_count == 0:
-            competition = 60  # Severely undersupplied/unproven
-        elif charger_count <= 5:
-            competition = 90  # Sweet spot: proven demand, plenty of room
-        elif charger_count <= 15:
-            # Scale smoothly from 90 down to 40
-            pct = (charger_count - 5) / 10
-            competition = 90 - (pct * 50)
-        else:
-            competition = max(20, 40 - (charger_count - 15) * 1.5)
-
-        # Charger-to-vehicle ratio
-        charger_to_vehicle = round(charger_count / max(city_ev_share, 1), 6)
-
-        # ── Accessibility Score ──
+        # Extract city's specific POI data from the batch dictionary
         poi_key = f"{lat}_{lng}"
         poi_data = pois.get(poi_key, {})
         if isinstance(poi_data, dict) and "data" in poi_data:
             poi_data = poi_data["data"]
         if not isinstance(poi_data, dict):
             poi_data = {}
+
+        # ── Competition Score ──
+        # Count existing chargers within the tier-appropriate radius
+        nearby = _get_nearby_chargers(lat, lng, charger_grid, radius_km=search_radius)
+        ocm_count = sum(c.get("numPoints", 1) for c in nearby)
+        osm_count = poi_data.get("osmChargers", 0)
+        charger_count = ocm_count + osm_count
+
+        # Competition scoring: scaling thresholds by market size
+        # With OSM + OCM data, numbers will be more realistic
+        if charger_count < 2:
+            competition = 60  # Severely undersupplied/unproven
+        elif charger_count <= 25:
+            competition = 90  # Sweet spot: proven demand, plenty of room
+        elif charger_count <= 75:
+            # Scale smoothly from 90 down to 40
+            pct = (charger_count - 25) / 50.0
+            competition = 90 - (pct * 50)
+        else:
+            competition = max(20, 40 - (charger_count - 75) * 0.5)
+
+        # Charger-to-vehicle ratio
+        charger_to_vehicle = round(charger_count / max(city_ev_share, 1), 6)
+
+        # ── Accessibility Score ──
 
         has_highway = poi_data.get("hasHighwayAccess", city.get("nhConnectivity", False))
         total_pois = poi_data.get("totalPOIs", 5)

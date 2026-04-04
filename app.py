@@ -137,7 +137,7 @@ def get_nearby_pois():
     return jsonify(data)
 
 
-def _fetch_city_pois_batch(cities, max_workers=4):
+def _fetch_city_pois_batch(cities, max_workers=10):
     """
     Fetch POIs for all cities using thread pool.
     Each call uses per-key cache, so only uncached cities trigger API calls.
@@ -149,7 +149,10 @@ def _fetch_city_pois_batch(cities, max_workers=4):
     # First pass: check what's already cached
     for city in cities:
         key = f"{city['lat']}_{city['lng']}"
-        cached_poi = overpass_client.get_cached_pois(city["lat"], city["lng"])
+        tier = city.get("tier", 2)
+        api_radius_m = 15000 if tier == 1 else (10000 if tier == 2 else 7000)
+        
+        cached_poi = overpass_client.get_cached_pois(city["lat"], city["lng"], radius_m=api_radius_m)
         if cached_poi is not None:
             city_pois[key] = cached_poi
         else:
@@ -163,7 +166,10 @@ def _fetch_city_pois_batch(cities, max_workers=4):
     # Second pass: fetch uncached in parallel
     def fetch_one(city):
         key = f"{city['lat']}_{city['lng']}"
-        pois = overpass_client.get_pois(city["lat"], city["lng"], radius_m=25000)
+        tier = city.get("tier", 2)
+        api_radius_m = 15000 if tier == 1 else (10000 if tier == 2 else 7000)
+        
+        pois = overpass_client.get_pois(city["lat"], city["lng"], radius_m=api_radius_m)
         return key, pois
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
