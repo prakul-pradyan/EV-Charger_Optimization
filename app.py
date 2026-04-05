@@ -18,6 +18,7 @@ from flask_cors import CORS
 from engine.scoring_engine import ScoringEngine
 from engine.utilization_model import UtilizationModel
 from engine.break_even_calc import BreakEvenCalculator
+from engine.ml_engine import MLEngine
 from api.open_charge_map import OpenChargeMapClient
 from api.overpass import OverpassClient
 from api.data_loader import DataLoader
@@ -37,6 +38,7 @@ ocm_client = OpenChargeMapClient(cache=cache)
 overpass_client = OverpassClient(cache=cache)
 data_loader = DataLoader(data_dir=DATA_DIR)
 scoring_engine = ScoringEngine()
+ml_engine = MLEngine()
 utilization_model = UtilizationModel()
 break_even_calc = BreakEvenCalculator()
 
@@ -251,8 +253,9 @@ def run_analysis():
         weight_overrides=weights,
     )
     t_scored = time.time()
-    print(f"[ANALYSIS] Scoring complete ({round(t_scored - t_pois, 1)}s)")
-
+    # Run ML Clustering on scored cities
+    scored, ml_summary = ml_engine.generate_insights(scored)
+    
     # Only compute utilization & break-even for top 50 (not all cities)
     top50 = scored[:50]
     constants = grid_data.get("constants", {})
@@ -293,6 +296,7 @@ def run_analysis():
 
     result = {
         "summary": summary,
+        "mlSummary": ml_summary,
         "sites": top50,
         "meta": {"cached": False, "cacheSource": "compute", "computeTimeMs": elapsed_ms},
     }
@@ -309,6 +313,41 @@ def run_analysis():
 def site_detail(rank):
     """Get detailed analysis for a specific ranked site."""
     return jsonify({"message": "Use /api/analysis/run and filter by rank", "rank": rank})
+
+
+# ── API: Machine Learning Insights ───────────────────────────────────
+@app.route("/api/ml-insights", methods=["GET", "POST"])
+def get_ml_insights():
+    if request.method == "GET":
+        # Check if we have standard cached analysis we can pull from instantly
+        global _analysis_cache
+        if _analysis_cache and _analysis_cache.get("result"):
+            cached_result = _analysis_cache["result"]
+            return jsonify({
+                "status": "success",
+                "source": "memory_cache",
+                "summary": cached_result.get("mlSummary", {}),
+                "data": cached_result.get("sites", [])
+            })
+            
+        return jsonify({
+            "message": "The Machine Learning engine is active! No cached data found. Please run the analysis on the main dashboard first, or send a POST request with your JSON list of cities."
+        })
+        
+    cities = request.get_json(silent=True)
+    if not cities or not isinstance(cities, list):
+        return jsonify({"error": "Expected a JSON list of cities."}), 400
+        
+    enriched_cities, model_summary = ml_engine.generate_insights(cities)
+    
+    if "error" in model_summary:
+        return jsonify({"status": "error", "message": model_summary["error"]}), 400
+        
+    return jsonify({
+        "status": "success",
+        "data": enriched_cities,
+        "summary": model_summary
+    })
 
 
 # ── API: Cache management ────────────────────────────────────────────

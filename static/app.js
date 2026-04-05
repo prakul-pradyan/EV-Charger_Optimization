@@ -125,7 +125,7 @@ function updateTable(sites) {
     const tbody = document.getElementById('sites-tbody');
 
     if (!sites.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No sites match your filters</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No sites match your filters</td></tr>';
         return;
     }
 
@@ -133,6 +133,13 @@ function updateTable(sites) {
         const be = site.breakEven || {};
         const scoreClass = site.compositeScore >= 75 ? 'score-high'
             : site.compositeScore >= 50 ? 'score-mid' : 'score-low';
+            
+        const mlLabel = site.kmeans_label || 'Uncategorised';
+        let mlClass = 'badge-low';
+        if (mlLabel === 'Priority Expansion') mlClass = 'badge-priority';
+        else if (mlLabel === 'Emerging Market') mlClass = 'badge-emerging';
+        else if (mlLabel === 'Saturated Zone') mlClass = 'badge-saturated';
+            
         return `
             <tr data-rank="${site.rank}" onclick="showSiteDetail(${site.rank})">
                 <td style="font-weight:700;color:var(--accent-primary);">${site.rank}</td>
@@ -142,6 +149,7 @@ function updateTable(sites) {
                 </td>
                 <td><span class="score-badge ${scoreClass}">${site.compositeScore.toFixed(1)}</span></td>
                 <td>${site.chargerToVehicleRatio.toFixed(4)}</td>
+                <td><span class="ml-badge ${mlClass}">${mlLabel}</span></td>
                 <td>${site.accessibilityLabel}</td>
                 <td>${be.months !== undefined && be.months < 999 ? be.months + ' mo' : 'N/A'}</td>
             </tr>`;
@@ -469,6 +477,14 @@ window.showSiteDetail = function (rank) {
             <div class="detail-item">
                 <div class="label">Accessibility</div>
                 <div class="value">${site.accessibilityLabel}</div>
+            </div>
+            <div class="detail-item" style="border-color: var(--accent-primary);">
+                <div class="label" style="color: var(--accent-primary);">K-Means Market Tag</div>
+                <div class="value">${site.kmeans_label || 'N/A'}</div>
+            </div>
+            <div class="detail-item" style="border-color: var(--accent-purple);">
+                <div class="label" style="color: var(--accent-purple);">DBSCAN Outlier Status</div>
+                <div class="value">${site.dbscan_label === 'Outlier / Anomaly' ? '<span style="color:var(--accent-danger)">Anomaly Detected</span>' : 'Standard Cluster Group'}</div>
             </div>
             <div class="detail-item">
                 <div class="label">Break-Even</div>
