@@ -1,13 +1,10 @@
 {
   "version": 2,
+  "outputDirectory": "static",
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "https://ev-charger-optimiser.onrender.com/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/static/$1"
     }
   ]
 }
